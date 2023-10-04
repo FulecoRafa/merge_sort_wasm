@@ -7,7 +7,7 @@ import (
 
 func main() {
     // Generate a list of random numbers from 0 to 1000.
-    numbers := make([]int, 1000)
+    numbers := make([]int, 1_000_000)
     for i := range numbers {
         numbers[i] = i
     }
