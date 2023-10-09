@@ -19,7 +19,11 @@ function loadExample() {
 }
 
 const arr = loadExample()
+console.time("GO parallel")
+const orderedParallel = GoMergeSort(arr)
+console.timeEnd("GO parallel")
 console.time("GO")
 const ordered = GoMergeSort(arr)
 console.timeEnd("GO")
 console.log(ordered)
+console.log(orderedParallel)

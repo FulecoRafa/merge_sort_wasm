@@ -10,7 +10,7 @@ import (
 	"github.com/FulecoRafa/merge_sort_wasm/golang/lib"
 )
 
-func wrapMergeSort() js.Func {
+func wrapMerge(mergeFunc func([]int) []int) js.Func {
 	helperFunc := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
         // Check if arguments are correct
 		if len(args) != 1 {
@@ -35,7 +35,7 @@ func wrapMergeSort() js.Func {
 		}
 
         // Lib execution
-		ordered := lib.MergeSort(data)
+		ordered := mergeFunc(data)
 
         //Convert result back
 		converted := make([]interface{}, len(ordered))
@@ -47,7 +47,22 @@ func wrapMergeSort() js.Func {
 	return helperFunc
 }
 
+func wrapMergeSort() js.Func {
+    return wrapMerge(lib.MergeSort[int])
+}
+
+func wrapMergeSortParallel() js.Func {
+    return wrapMerge(func (data []int) []int {
+        ch := make(chan []int, 1)
+        lib.ParallelMergeSort[int](data, ch)
+        result := <- ch
+        return result
+    })
+
+}
+
 func main() {
 	js.Global().Set("GoMergeSort", wrapMergeSort())
+	js.Global().Set("GoParallelMergeSort", wrapMergeSortParallel())
 	<-make(chan struct{})
 }
