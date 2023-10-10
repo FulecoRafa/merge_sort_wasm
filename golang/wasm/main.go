@@ -12,7 +12,7 @@ import (
 
 func wrapMerge(mergeFunc func([]int) []int) js.Func {
 	helperFunc := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-        // Check if arguments are correct
+		// Check if arguments are correct
 		if len(args) != 1 {
 			return "invalid params"
 		}
@@ -23,7 +23,7 @@ func wrapMerge(mergeFunc func([]int) []int) js.Func {
 			return nil
 		}
 
-        // Convert arguments
+		// Convert arguments
 		data := make([]int, arg.Length())
 		for i := range data {
 			item := arg.Index(i)
@@ -34,10 +34,10 @@ func wrapMerge(mergeFunc func([]int) []int) js.Func {
 			data[i] = item.Int()
 		}
 
-        // Lib execution
+		// Lib execution
 		ordered := mergeFunc(data)
 
-        //Convert result back
+		//Convert result back
 		converted := make([]interface{}, len(ordered))
 		for i := range ordered {
 			converted[i] = ordered[i]
@@ -48,21 +48,35 @@ func wrapMerge(mergeFunc func([]int) []int) js.Func {
 }
 
 func wrapMergeSort() js.Func {
-    return wrapMerge(lib.MergeSort[int])
+	return wrapMerge(lib.MergeSort[int])
 }
 
 func wrapMergeSortParallel() js.Func {
-    return wrapMerge(func (data []int) []int {
-        ch := make(chan []int, 1)
-        lib.ParallelMergeSort[int](data, ch)
-        result := <- ch
-        return result
-    })
+	return wrapMerge(func(data []int) []int {
+		ch := make(chan []int, 1)
+		lib.ParallelMergeSort[int](data, ch)
+		result := <-ch
+		return result
+	})
 
+}
+
+func fibonacci(n int) int {
+	if n == 1 || n == 2 {
+		return 1
+	}
+	return fibonacci(n-1) + fibonacci(n-2)
+}
+
+func wrapFibonacci() js.Func {
+    return js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+        return fibonacci(args[0].Int())
+    })
 }
 
 func main() {
 	js.Global().Set("GoMergeSort", wrapMergeSort())
 	js.Global().Set("GoParallelMergeSort", wrapMergeSortParallel())
+	js.Global().Set("GoFibonacci", wrapFibonacci())
 	<-make(chan struct{})
 }
